@@ -33,7 +33,7 @@
         name: tomcat
         group: tomcat
         shell: /bin/nologin
-        home: /usr/local/tomcat8
+        home: /usr/local/tomcat8 # directory will be created automatically, and be home for tomcat.
 
     - file:
         path: /tmp/tomcat8
@@ -45,7 +45,7 @@
         dest: /tmp/tomcat8/
         remote_src: yes
         list_files: yes
-      register: unarchive_info
+      register: unarchive_info #to catch the runtime, file name is not enough
 
     - debug:
         msg: "{{unarchive_info.files[0].split('/')[0]}}"
@@ -54,11 +54,11 @@
       synchronize:
         src: "/tmp/tomcat8/{{unarchive_info.files[0].split('/')[0]}}/"
         dest: /usr/local/tomcat8/
-      delegate_to: "{{ inventory_hostname }}"
+      delegate_to: "{{ inventory_hostname }}" #the src is not on our local machine, therefore delegating to hotsname of whatever target the ansible is deploting this playbook to.
 
     - name: Change ownership of /usr/local/tomcat8
       file:
-        path: /usr/local/tomcat8
+        path: /usr/local/tomcat8 #to keep ownership on the transferred files
         owner: tomcat
         group: tomcat
         recurse: yes

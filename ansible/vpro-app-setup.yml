@@ -3,18 +3,18 @@
   hosts: appsrvgrp
   become: yes
   vars:
-    timestamp: "{{ansible_date_time.date}}_{{ansible_date_time.hour}}_{{ansible_date_time.minute}}"
+    timestamp: "{{ansible_date_time.date}}_{{ansible_date_time.hour}}_{{ansible_date_time.minute}}" #will be create every time we run the playbook, and used in backup files
   tasks:
     - name: Download latest VProfile.war from nexus
       get_url:
-        url: "http://{{USER}}:{{PASS}}@{{nexusip}}:8081/repository/{{reponame}}/{{groupid}}/{{artifactid}}/{{build}}-{{time}}/{{vprofile_version}}"
+        url: "http://{{USER}}:{{PASS}}@{{nexusip}}:8081/repository/{{reponame}}/{{groupid}}/{{artifactid}}/{{build}}-{{time}}/{{vprofile_version}}" # artifact in vprofile_release nexus repository for example: http://54.242.78.2:8081/repository/vprofile-release/QA/vproapp/32-2023-06-25%2012%3A24/vproapp-32-2023-06-25%2012%3A24.war 
         dest: "/tmp/vproapp-{{vprofile_version}}"
       register: wardeploy
       tags:
        - deploy
 
-    - stat:
-        path: /usr/local/tomcat8/webapps/ROOT
+    - stat: # check if this path exists, and store the result in variable for later use
+        path: /usr/local/tomcat8/webapps/ROOT 
       register: artifact_stat
       tags:
        - deploy
@@ -26,7 +26,7 @@
       tags:
        - deploy
 
-    - name: Try Backup and Deploy
+    - name: Try Backup and Deploy #we will try because the backup and deploy can fail for many reasons, it is important to keep a back up plan for failure like rollback
       block:
       - name: Archive ROOT dir with timestamp
         archive:
@@ -83,12 +83,12 @@
        - deploy
 
     - name: Wait until ROOT.war is extracted to ROOT directory
-      wait_for:
+      wait_for: # wait until ROOT directory is available, because extraction takes time. 
         path: /usr/local/tomcat8/webapps/ROOT
       tags:
        - deploy
 
-#    - name: Deploy web configuration file
+#    - name: Deploy web configuration file #for deploying application.properties file from the playbook by using playbook 
 #      template:
 #        src: templates/application.j2
 #        dest: /usr/local/tomcat8/webapps/ROOT/WEB-INF/classes/application.properties
