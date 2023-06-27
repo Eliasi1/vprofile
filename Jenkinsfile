@@ -13,6 +13,8 @@ pipeline {
         NEXUS_REPOSITORY = "vprofile-release"
 	NEXUS_REPOGRP_ID    = "vprofile-grp-repo"
         NEXUS_CREDENTIAL_ID = "nexuslogin"
+	SONARSERVER = 'sonarserver'
+        SONARSCANNER = 'sonarscanner'
         ARTVERSION = "${env.BUILD_ID}"
     }
 	
@@ -56,11 +58,11 @@ pipeline {
         stage('CODE ANALYSIS with SONARQUBE') {
           
 		  environment {
-             scannerHome = tool 'sonarscanner'
+             scannerHome = tool "${SONARSCANNER}"
           }
 
           steps {
-            withSonarQubeEnv('sonar-pro') {
+            withSonarQubeEnv("${SONARSERVER}") {
                sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vprofile \
                    -Dsonar.projectName=vprofile-repo \
                    -Dsonar.projectVersion=1.0 \
